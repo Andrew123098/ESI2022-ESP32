@@ -1,7 +1,7 @@
 /* This script creates a representative dataset of audio from the ESP32-S3
    
     TO RUN: >> idf.py set-target esp32s3
-           >> idf.py -p COM3 -b 480600 flash monitor
+            >> idf.py -p COM3 -b 480600 flash monitor
 
     MAKE SURE SPI FLASH SIZE IS 8MB:
             >> idf.py menuconfig
@@ -55,24 +55,50 @@ void app_main(void)
     esp_adc_cal_characterize(ADC_UNIT_1,ADC_ATTEN_DB_0,ADC_WIDTH_BIT_DEFAULT,1100,&adc1_chars);
     esp_adc_cal_characterize(ADC_UNIT_2,ADC_ATTEN_DB_0,ADC_WIDTH_BIT_DEFAULT,1100,&adc2_chars);
 
-    
-    int val2 = 0;
-    int* pval2 = &val2;
+    int val1;
+    int val2;
+    int n = 44100;
+    int counter = 0;
+    float difference;
     while(true){
-        int val1 = adc1_get_raw(ADC1_CHANNEL_3);
-        adc2_get_raw(ADC2_CHANNEL_0,ADC_WIDTH_BIT_DEFAULT,pval2);
         
-        // int val1_prev = val1;
-        // int val2_prev = val2;
-        
-        // if(val1 != val1_prev || val2 != val2_prev){
-        //     printf("%d, %d\n",val1,val2);
+        // Get the average of the first N values to equalize the ADC readings.
+        // if(counter == 0){
+        //     int sum_adc_1 = 0;
+        //     int sum_adc_2 = 0;
+        //     int temp_1;
+        //     int temp_2;
+        //     vTaskDelay(1000);
+        //     for(int i = 0; i < n; i++){
+        //         temp_1 = adc1_get_raw(ADC1_CHANNEL_3);
+        //         adc2_get_raw(ADC2_CHANNEL_0,ADC_WIDTH_BIT_DEFAULT,&temp_2);
+        //         sum_adc_1 += temp_1;
+        //         sum_adc_2 += temp_2;
+        //     }
+
+        //     float avg_adc_1 = sum_adc_1 / n;
+        //     float avg_adc_2 = sum_adc_2 / n;
+        //     difference = avg_adc_1 - avg_adc_2;
+        //     printf("ADC1: %f\nADC2: %f\nDifference: %f\n",avg_adc_1,avg_adc_2,difference);
         // }
+        
+        
+        val1 = adc1_get_raw(ADC1_CHANNEL_3);
+        adc2_get_raw(ADC2_CHANNEL_0,ADC_WIDTH_BIT_DEFAULT,&val2);
+        // if(difference >= 0.0){
+        //     val1 = val1 + difference;
+        // } else {
+        //     val1 = val1 - difference;
+        // }
+
+        // printf("%d, %d\n",val1,val2);
+            
 
         int adc1_voltage = esp_adc_cal_raw_to_voltage(val1,&adc1_chars);
         int adc2_voltage = esp_adc_cal_raw_to_voltage(val2,&adc2_chars);
-        printf("%d, %d\n",adc1_voltage,adc2_voltage);
+        printf("\n%d, %d",adc1_voltage,adc2_voltage);
         vTaskDelay(10);
+        counter++;
     }
 
 
